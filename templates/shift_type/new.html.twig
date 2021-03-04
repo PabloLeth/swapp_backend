@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New ShiftType{% endblock %}
+
+{% block body %}
+    <h1>Create new ShiftType</h1>
+
+    {{ include('shift_type/_form.html.twig') }}
+
+    <a href="{{ path('shift_type_index') }}">back to list</a>
+{% endblock %}

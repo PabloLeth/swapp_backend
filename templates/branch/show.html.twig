@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Branch{% endblock %}
+
+{% block body %}
+    <h1>Branch</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>BranchId</th>
+                <td>{{ branch.branchId }}</td>
+            </tr>
+            <tr>
+                <th>BranchName</th>
+                <td>{{ branch.branchName }}</td>
+            </tr>
+            <tr>
+                <th>Address</th>
+                <td>{{ branch.address }}</td>
+            </tr>
+            <tr>
+                <th>PhoneNumber</th>
+                <td>{{ branch.phoneNumber }}</td>
+            </tr>
+            <tr>
+                <th>Email</th>
+                <td>{{ branch.email }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('branch_index') }}">back to list</a>
+
+    <a href="{{ path('branch_edit', {'branchId': branch.branchId}) }}">edit</a>
+
+    {{ include('branch/_delete_form.html.twig') }}
+{% endblock %}
