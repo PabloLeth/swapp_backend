@@ -24,14 +24,14 @@ class Shift
     /**
      * @var int
      *
-     * @ORM\Column(name="start_shift", type="integer", nullable=false)
+     * @ORM\Column(name="start_shift", type="datetime", nullable=false)
      */
     private $startShift;
 
     /**
      * @var int
      *
-     * @ORM\Column(name="end_shift", type="integer", nullable=false)
+     * @ORM\Column(name="end_shift", type="datetime", nullable=false)
      */
     private $endShift;
 
@@ -42,6 +42,12 @@ class Shift
      */
     private $swapping = '0';
 
+     /**
+     * @var bool
+     *
+     * @ORM\Column(name="swappable", type="boolean", nullable=false)
+     */
+    private $swappable = '0';
     /**
      * @var \Branch
      *
@@ -71,6 +77,96 @@ class Shift
      * })
      */
     private $worker;
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getStartShift(): ?\DateTimeInterface
+    {
+        return $this->startShift;
+    }
+
+    public function setStartShift(\DateTimeInterface $startShift): self
+    {
+        $this->startShift = $startShift;
+
+        return $this;
+    }
+
+    public function getEndShift(): ?\DateTimeInterface
+    {
+        return $this->endShift;
+    }
+
+    public function setEndShift(\DateTimeInterface $endShift): self
+    {
+        $this->endShift = $endShift;
+
+        return $this;
+    }
+
+    public function getSwapping(): ?bool
+    {
+        return $this->swapping;
+    }
+
+    public function setSwapping(bool $swapping): self
+    {
+        $this->swapping = $swapping;
+
+        return $this;
+    }
+
+    public function getSwappable(): ?bool
+    {
+        return $this->swappable;
+    }
+
+    public function setSwappable(bool $swappable): self
+    {
+        $this->swappable = $swappable;
+
+        return $this;
+    }
+
+    public function getBranch(): ?Branch
+    {
+        return $this->branch;
+    }
+
+    public function setBranch(?Branch $branch): self
+    {
+        $this->branch = $branch;
+
+        return $this;
+    }
+
+    public function getShiftType(): ?ShiftType
+    {
+        return $this->shiftType;
+    }
+
+    public function setShiftType(?ShiftType $shiftType): self
+    {
+        $this->shiftType = $shiftType;
+
+        return $this;
+    }
+
+    public function getWorker(): ?Workers
+    {
+        return $this->worker;
+    }
+
+    public function setWorker(?Workers $worker): self
+    {
+        $this->worker = $worker;
+
+        return $this;
+    }
+
 
 
 }

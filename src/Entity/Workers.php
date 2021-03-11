@@ -169,4 +169,76 @@ class Workers implements UserInterface
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
     }
+
+    public function getWorkerName(): ?string
+    {
+        return $this->workerName;
+    }
+
+    public function setWorkerName(string $workerName): self
+    {
+        $this->workerName = $workerName;
+
+        return $this;
+    }
+
+    public function getWorkerSurname(): ?string
+    {
+        return $this->workerSurname;
+    }
+
+    public function setWorkerSurname(string $workerSurname): self
+    {
+        $this->workerSurname = $workerSurname;
+
+        return $this;
+    }
+
+    public function getPhoneNumber(): ?int
+    {
+        return $this->phoneNumber;
+    }
+
+    public function setPhoneNumber(int $phoneNumber): self
+    {
+        $this->phoneNumber = $phoneNumber;
+
+        return $this;
+    }
+
+    public function getDni(): ?string
+    {
+        return $this->dni;
+    }
+
+    public function setDni(string $dni): self
+    {
+        $this->dni = $dni;
+
+        return $this;
+    }
+
+    public function getBranch(): ?Branch
+    {
+        return $this->branch;
+    }
+
+    public function setBranch(?Branch $branch): self
+    {
+        $this->branch = $branch;
+
+        return $this;
+    }
+
+    public function getRole(): ?Role
+    {
+        return $this->role;
+    }
+
+    public function setRole(?Role $role): self
+    {
+        $this->role = $role;
+
+        return $this;
+    }
 }

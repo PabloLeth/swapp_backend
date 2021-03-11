@@ -12,8 +12,8 @@ security:
             entity:
                 class: App\Entity\Workers
                 property: email
-        # used to reload user from session & other features (e.g. switch_user)
-        # used to reload user from session & other features (e.g. switch_user)
+      
+       
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
@@ -25,8 +25,13 @@ security:
 
             json_login:
                 check_path: /login
-                # username_path: email            //para especificar el path si mandamos un json diferente a username,password
-                # pasword_path: password
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
+            guard:
+                authenticators:
+                    - lexik_jwt_authentication.jwt_token_authenticator
+            
+            
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#firewalls-authentication
@@ -39,3 +44,4 @@ security:
     access_control:
         # - { path: ^/admin, roles: ROLE_ADMIN }
         # - { path: ^/profile, roles: ROLE_USER }
+         - { path: ^/shift/mg, roles: ROLE_MANAGER}

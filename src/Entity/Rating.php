@@ -55,5 +55,58 @@ class Rating
      */
     private $toUser;
 
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getRate(): ?int
+    {
+        return $this->rate;
+    }
+
+    public function setRate(int $rate): self
+    {
+        $this->rate = $rate;
+
+        return $this;
+    }
+
+    public function getReview(): ?string
+    {
+        return $this->review;
+    }
+
+    public function setReview(string $review): self
+    {
+        $this->review = $review;
+
+        return $this;
+    }
+
+    public function getFromUser(): ?Workers
+    {
+        return $this->fromUser;
+    }
+
+    public function setFromUser(?Workers $fromUser): self
+    {
+        $this->fromUser = $fromUser;
+
+        return $this;
+    }
+
+    public function getToUser(): ?Workers
+    {
+        return $this->toUser;
+    }
+
+    public function setToUser(?Workers $toUser): self
+    {
+        $this->toUser = $toUser;
+
+        return $this;
+    }
+
 
 }

@@ -28,12 +28,23 @@ class ShiftType
      */
     private $shiftType;
 
-    /**
-     * @var bool
-     *
-     * @ORM\Column(name="swappable", type="boolean", nullable=false, options={"default"="1"})
-     */
-    private $swappable = true;
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getShiftType(): ?string
+    {
+        return $this->shiftType;
+    }
+
+    public function setShiftType(string $shiftType): self
+    {
+        $this->shiftType = $shiftType;
+
+        return $this;
+    }
+
 
 
 }
