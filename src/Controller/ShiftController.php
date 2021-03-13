@@ -53,37 +53,110 @@ class ShiftController extends AbstractController
      */
     public function newShift( Request $request, EntityManagerInterface $em, WorkersRepository $wRepo, ShiftTypeRepository $sTRepo ): Response
     {
-        $userLogged = $this->getUser();
-        $bodyRequest = $request->getContent();
-        $shiftObjs = json_decode($bodyRequest, true); /*second parameter transforms it in asociative array*/
+        $userLogged  = $this->getUser();                 /* funcion que devuele el usuario que esta logeado */
+        $bodyRequest = $request->getContent();           /* sacamos el contenido de la request del POST */
+        $shiftObjs   = json_decode($bodyRequest, true);  /*second parameter transforms it in asociative array*/
 
-        foreach ($shiftObjs as $shiftObj ){
+        foreach ($shiftObjs as $shiftObj ){                /*para mas de un caso hacemos un bucle para cada caso*/
 
       
-        $shift = new Shift();
-        $shift->setStartShift(new \DateTime($shiftObj['startShift']));/* testear fallo al introducir fechas */
-        $shift->setEndShift(new \DateTime($shiftObj['endShift']));/* testear fallo al introducir fechas */
-       
-        $shift->setBranch($userLogged->getBranch()); /* testear posible fallo. posiblemente depurado */
+            $shift = new Shift();
+            $shift->setStartShift(new \DateTime($shiftObj['startShift']));/* testear fallo al introducir fechas */
+            $shift->setEndShift(new \DateTime($shiftObj['endShift']));/* testear fallo al introducir fechas */
+        
+            $shift->setBranch($userLogged->getBranch()); /* testear posible fallo. posiblemente depurado */
 
-        $workerObj = $wRepo->find($shiftObj['worker_id']);
-        $shiftTypeObj = $sTRepo->find($shiftObj['shiftType']);
-        
-        $shift->setWorker($workerObj);
-        $shift->setShiftType($shiftTypeObj);
-        $shift->setSwappable($shiftObj['swappable']);
-        $shift->setSwapping($shiftObj['swapping']);
-        
-        $em->persist($shift);
-    }
+            $workerObj = $wRepo->find($shiftObj['worker_id']); /* busca por el id que recibe del front para crear el objeto*/
+            $shiftTypeObj = $sTRepo->find($shiftObj['shiftType']);
+            
+            $shift->setWorker($workerObj);
+            $shift->setShiftType($shiftTypeObj);
+            $shift->setSwappable($shiftObj['swappable']);
+            $shift->setSwapping($shiftObj['swapping']);
+            
+            $em->persist($shift);
+        }
         $em->flush();
 
-       $answer = [
-           'message' => "its all good man"
-       ];
+        $answer = [
+           'message' => "all data sent, saved in the data base"
+        ];
     
         return new JsonResponse($answer);
     }
+   /**
+     * @Route("/rota", name="shift_rota", methods={"GET"})
+     */
+    public function rota( ShiftRepository $shiftRepo, WorkersRepository $wRepo): Response
+    {/*Funcion que deuvleve TODOS los turnos del trabajador logueado */
+
+        $userLogged  = $this->getUser();
+
+        $shifts = $shiftRepo->findBy(
+            ['worker' => $userLogged->getId()]
+        );
+        foreach ($shifts as $shift){
+
+            $shiftObj = [
+                'startShift' => $shift->getStartShift(),
+                'endShift' => $shift->getEndShift(),
+                'swapping' => $shift->getSwapping(),
+                'swappable' => $shift->getSwappable(),
+                'branch' => $shift->getBranch()->getBranchName(),
+                'shiftType' => $shift->getShiftType()->getShiftType(),
+                'worker' => $shift->getWorker()->getWorkerName(), /*avoidable? */
+                'job' => $shift->getWorker()->getJob()->getJob(),
+
+
+            ];
+            $shiftarray[] = $shiftObj;          //to push it in shiftArray
+        }
+
+       
+        return new JsonResponse($shiftarray);
+    }
+
+     /**
+     * @Route("/rota", name="shift_rota", methods={"POST"})
+     */
+    public function rangeRota( Request $request, EntityManagerInterface $em, WorkersRepository $wRepo, ShiftTypeRepository $sTRepo ): Response
+    {
+        $bodyRequest = $request->getContent();
+        $shiftObjs   = json_decode($bodyRequest, true);
+
+        $dateFrom(new \DateTime($shiftObj['dateFrom']));
+        $dateTo(new \DateTime($shiftObj['dateTo']));
+
+       
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     // /**
     //  * @Route("/", name="shift_index", methods={"GET"})
     //  */
