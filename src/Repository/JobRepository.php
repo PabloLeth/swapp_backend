@@ -2,25 +2,25 @@
 
 namespace App\Repository;
 
-use App\Entity\Role;
+use App\Entity\Job;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @method Role|null find($id, $lockMode = null, $lockVersion = null)
- * @method Role|null findOneBy(array $criteria, array $orderBy = null)
- * @method Role[]    findAll()
- * @method Role[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method Job|null find($id, $lockMode = null, $lockVersion = null)
+ * @method Job|null findOneBy(array $criteria, array $orderBy = null)
+ * @method Job[]    findAll()
+ * @method Job[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class RoleRepository extends ServiceEntityRepository
+class JobRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Role::class);
+        parent::__construct($registry, Job::class);
     }
 
     // /**
-    //  * @return Role[] Returns an array of Role objects
+    //  * @return Job[] Returns an array of Job objects
     //  */
     /*
     public function findByExampleField($value)
@@ -37,7 +37,7 @@ class RoleRepository extends ServiceEntityRepository
     */
 
     /*
-    public function findOneBySomeField($value): ?Role
+    public function findOneBySomeField($value): ?Job
     {
         return $this->createQueryBuilder('c')
             ->andWhere('c.exampleField = :val')

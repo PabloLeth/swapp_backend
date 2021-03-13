@@ -8,7 +8,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 /**
  * Workers
  *
- * @ORM\Table(name="Workers", indexes={@ORM\Index(name="branch_id", columns={"branch_id"}), @ORM\Index(name="role_id", columns={"role_id"})})
+ * @ORM\Table(name="Workers", indexes={@ORM\Index(name="branch_id", columns={"branch_id"}), @ORM\Index(name="job_id", columns={"job_id"})})
  * @ORM\Entity(repositoryClass=WorkersRepository::class)
  */
 class Workers implements UserInterface
@@ -75,14 +75,14 @@ class Workers implements UserInterface
     private $branch;
 
     /**
-     * @var \Role
+     * @var \Job
      *
-     * @ORM\ManyToOne(targetEntity="Role")
+     * @ORM\ManyToOne(targetEntity="Job")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="role_id", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="job_id", referencedColumnName="id")
      * })
      */
-    private $role;
+    private $job;
 
     /**
      * @ORM\Column(type="json")
@@ -230,14 +230,14 @@ class Workers implements UserInterface
         return $this;
     }
 
-    public function getRole(): ?Role
+    public function getJob(): ?Job
     {
-        return $this->role;
+        return $this->job;
     }
 
-    public function setRole(?Role $role): self
+    public function setJob(?Job $job): self
     {
-        $this->role = $role;
+        $this->job = $job;
 
         return $this;
     }

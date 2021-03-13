@@ -10,7 +10,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Repository\ShiftRepository;
+use App\Repository\ShiftTypeRepository;
 use App\Repository\BranchRepository;
+use App\Repository\WorkersRepository;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * @Route("/shift")
@@ -20,7 +23,7 @@ class ShiftController extends AbstractController
     /**
      * @Route("/pool", name="shift_pool", methods={"GET"})
      */
-    public function pool( ShiftRepository $shiftRepo, BranchRepository $branchRepo): Response
+    public function pool( ShiftRepository $shiftRepo): Response
     {
         $shifts = $shiftRepo->findBy(
             ['swapping' => 1]
@@ -34,7 +37,10 @@ class ShiftController extends AbstractController
                 'swappable' => $shift->getSwappable(),
                 'branch' => $shift->getBranch()->getBranchName(),
                 'shiftType' => $shift->getShiftType()->getShiftType(),
-                'worker' => $shift->getWorker()->getWorkerName()
+                'worker' => $shift->getWorker()->getWorkerName(),
+                'job' => $shift->getWorker()->getJob()->getJob(),
+
+
             ];
             $shiftarray[] = $shiftObj;          //to push it in shiftArray
         }
@@ -42,7 +48,42 @@ class ShiftController extends AbstractController
        
         return new JsonResponse($shiftarray);
     }
+    /**
+     * @Route("/new", name="shift_new", methods={"POST"})
+     */
+    public function newShift( Request $request, EntityManagerInterface $em, WorkersRepository $wRepo, ShiftTypeRepository $sTRepo ): Response
+    {
+        $userLogged = $this->getUser();
+        $bodyRequest = $request->getContent();
+        $shiftObjs = json_decode($bodyRequest, true); /*second parameter transforms it in asociative array*/
 
+        foreach ($shiftObjs as $shiftObj ){
+
+      
+        $shift = new Shift();
+        $shift->setStartShift(new \DateTime($shiftObj['startShift']));/* testear fallo al introducir fechas */
+        $shift->setEndShift(new \DateTime($shiftObj['endShift']));/* testear fallo al introducir fechas */
+       
+        $shift->setBranch($userLogged->getBranch()); /* testear posible fallo. posiblemente depurado */
+
+        $workerObj = $wRepo->find($shiftObj['worker_id']);
+        $shiftTypeObj = $sTRepo->find($shiftObj['shiftType']);
+        
+        $shift->setWorker($workerObj);
+        $shift->setShiftType($shiftTypeObj);
+        $shift->setSwappable($shiftObj['swappable']);
+        $shift->setSwapping($shiftObj['swapping']);
+        
+        $em->persist($shift);
+    }
+        $em->flush();
+
+       $answer = [
+           'message' => "its all good man"
+       ];
+    
+        return new JsonResponse($answer);
+    }
     // /**
     //  * @Route("/", name="shift_index", methods={"GET"})
     //  */
