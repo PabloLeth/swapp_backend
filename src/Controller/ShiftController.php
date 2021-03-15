@@ -28,25 +28,9 @@ class ShiftController extends AbstractController
         $shifts = $shiftRepo->findBy(
             ['swapping' => 1]
         );
-        foreach ($shifts as $shift){
-
-            $shiftObj = [
-                'startShift' => $shift->getStartShift(),
-                'endShift' => $shift->getEndShift(),
-                'swapping' => $shift->getSwapping(),
-                'swappable' => $shift->getSwappable(),
-                'branch' => $shift->getBranch()->getBranchName(),
-                'shiftType' => $shift->getShiftType()->getShiftType(),
-                'worker' => $shift->getWorker()->getWorkerName(),
-                'job' => $shift->getWorker()->getJob()->getJob(),
-
-
-            ];
-            $shiftarray[] = $shiftObj;          //to push it in shiftArray
-        }
-
+      
        
-        return new JsonResponse($shiftarray);
+        return new JsonResponse($this-> serialize($shifts));
     }
     /**
      * @Route("/new", name="shift_new", methods={"POST"})
@@ -94,45 +78,56 @@ class ShiftController extends AbstractController
 
         $shifts = $shiftRepo->findBy(
             ['worker' => $userLogged->getId()]
-        );
-        foreach ($shifts as $shift){
+        );      
 
-            $shiftObj = [
-                'startShift' => $shift->getStartShift(),
-                'endShift' => $shift->getEndShift(),
-                'swapping' => $shift->getSwapping(),
-                'swappable' => $shift->getSwappable(),
-                'branch' => $shift->getBranch()->getBranchName(),
-                'shiftType' => $shift->getShiftType()->getShiftType(),
-                'worker' => $shift->getWorker()->getWorkerName(), /*avoidable? */
-                'job' => $shift->getWorker()->getJob()->getJob(),
-
-
-            ];
-            $shiftarray[] = $shiftObj;          //to push it in shiftArray
-        }
-
-       
-        return new JsonResponse($shiftarray);
+        return new JsonResponse ($this-> serialize($shifts));
     }
 
      /**
-     * @Route("/rota", name="shift_rota", methods={"POST"})
+     * @Route("/rota", name="shift_rota_POST", methods={"POST"})
      */
     public function rangeRota( Request $request, EntityManagerInterface $em, WorkersRepository $wRepo, ShiftTypeRepository $sTRepo, ShiftRepository $sRepo): Response
-    {
+    {/*Funcion que deuvleve TODOS los turnos del trabajador logueado */
         $bodyRequest = $request->getContent();
         
         $reqArray = json_decode($bodyRequest, true);
 
         // $dateFromctlr = new \DateTime($reqArray['dateFromjsn']);
         // $dateToctlr = new \DateTime($reqArray['dateTojsn']);
-        $dateFromctlr = "2021-03-14 12:00:00.000000";
-        $dateToctlr = "2021-03-16 12:00:00.000000";
-        $answer = $sRepo->getRotaRange($em, $dateFromctlr, $dateToctlr);
+        $dateFromctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u',$reqArray['dateFromjsn']);
+        $dateToctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u',$reqArray['dateTojsn']);
+        // $dateFromctlr =$reqArray['dateFromjsn'];
+        // $dateToctlr =$reqArray['dateTojsn'];
+        // $dateFromctlr = "2021-03-14 12:00:00.000000";
+        // $dateToctlr = "2021-03-16 12:00:00.000000";
        
-        return new JsonResponse($answer);
+        $shifts = $sRepo->getRotaRange($em, $dateFromctlr, $dateToctlr);
+
+       
+        
+        return new JsonResponse( $this-> serialize($shifts));
     }
+   private function serialize($arrayShifts){
+    $shiftarray = [];
+
+    foreach ($arrayShifts as $shift){
+        
+        $shiftObj = [
+            'startShift' => $shift->getStartShift(),
+            'endShift' => $shift->getEndShift(),
+            'swapping' => $shift->getSwapping(),
+            'swappable' => $shift->getSwappable(),
+            'branch' => $shift->getBranch()->getBranchName(),
+            'shiftType' => $shift->getShiftType()->getShiftType(),
+            'worker' => $shift->getWorker()->getWorkerName(),
+            'job' => $shift->getWorker()->getJob()->getJob(),
+
+
+        ];
+        $shiftarray[] = $shiftObj;          //to push it in shiftArray
+    }
+    return $shiftarray;
+   }/*funcion para serializar */
 
 
 
