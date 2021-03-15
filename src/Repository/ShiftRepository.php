@@ -5,15 +5,55 @@ namespace App\Repository;
 use App\Entity\Shift;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @method Shift|null find($id, $lockMode = null, $lockVersion = null)
  * @method Shift|null findOneBy(array $criteria, array $orderBy = null)
  * @method Shift[]    findAll()
- * @method Shift[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method Shift[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null) 
  */
 class ShiftRepository extends ServiceEntityRepository
 {
+
+    public function getRotaRange($em, $dateFrom, $dateTo)
+    {
+        $query = $em->createQuery("SELECT s FROM App\Entity\Shift s WHERE s.startShift >= $dateFrom AND s.endShift <= $dateTo");
+        $rotasRange = $query->getResult();
+        return $rotasRange;
+    }
+
+    // public function findRotaFromTo($em, $dateFrom, $dateTo)
+    // {
+    //     $qb = $this->createQueryBulder(alias : 's');
+
+    //     $qb
+    //         ->
+    // }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Shift::class);

@@ -119,15 +119,19 @@ class ShiftController extends AbstractController
      /**
      * @Route("/rota", name="shift_rota", methods={"POST"})
      */
-    public function rangeRota( Request $request, EntityManagerInterface $em, WorkersRepository $wRepo, ShiftTypeRepository $sTRepo ): Response
+    public function rangeRota( Request $request, EntityManagerInterface $em, WorkersRepository $wRepo, ShiftTypeRepository $sTRepo, ShiftRepository $sRepo): Response
     {
         $bodyRequest = $request->getContent();
-        $shiftObjs   = json_decode($bodyRequest, true);
+        
+        $reqArray = json_decode($bodyRequest, true);
 
-        $dateFrom(new \DateTime($shiftObj['dateFrom']));
-        $dateTo(new \DateTime($shiftObj['dateTo']));
-
+        // $dateFromctlr = new \DateTime($reqArray['dateFromjsn']);
+        // $dateToctlr = new \DateTime($reqArray['dateTojsn']);
+        $dateFromctlr = "2021-03-14 12:00:00.000000";
+        $dateToctlr = "2021-03-16 12:00:00.000000";
+        $answer = $sRepo->getRotaRange($em, $dateFromctlr, $dateToctlr);
        
+        return new JsonResponse($answer);
     }
 
 
