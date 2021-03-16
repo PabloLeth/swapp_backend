@@ -117,22 +117,39 @@ class ShiftController extends AbstractController
 
         return new JsonResponse( $this-> serialize($shifts));
     }
+
     /**
      * @Route("/swapping/{id}", name="user_swapping", methods={"PUT"})
      */
     public function swapping($id,Request $request, EntityManagerInterface $em, WorkersRepository $wRepo, ShiftTypeRepository $sTRepo, ShiftRepository $sRepo) : Response
-    {/**/
+    {/*funcion que cambia el estado de swapping del shift.id que se envia por PUT*/
 
-        //necesita verificacion de que el usuario es el dueño de este turno
+        $userLogged  = $this->getUser();
+        $userId = $userLogged->getId();
+        //?? necesitará verificacion de que el usuario es el dueño de este turno
         $shift = $sRepo->find($id);
         $bodyRequest = $request->getContent();
         $reqArray = json_decode($bodyRequest, true);
-
+        $isSwappable = $shift->getSwappable();
+        $isSwapping = $shift->getSwapping();
+      
+        // devuelve 403 si no hay permisos o alguien introduce un id a proposito
+        if ($isSwappable == 0 || $reqArray['swapping'] == 0 && $isSwapping == 0 ){
+            return new JsonResponse(['answer'=> 'there is no permission, contact with your manager'], 403);
+        }
+        //condicional para tomar el turno
+        if ($reqArray['swapping'] == 0){ //?? probablemente añadir doble condicional para comprobar el estado de swapping previo
+            $userLogged = $this->getUser();
+            $userId = $userLogged->getId();
+            $shift->setWorker($userLogged);
+            $shift->setSwappable(0);
+             // quizas añadir para cancelar el volver a cambiarlo una vez tomado aqui: $shift->setSwappable(0);
+        }
         $shift->setSwapping($reqArray['swapping']);
         $em->persist($shift);
         $em->flush();
         
-        return new JsonResponse(['answer'=> 'change realized successfully']);
+        return new JsonResponse(['answer'=> 'change completed successfully']);
     }
 
 
@@ -152,7 +169,7 @@ class ShiftController extends AbstractController
             'shiftType' => $shift->getShiftType()->getShiftType(),
             'worker' => $shift->getWorker()->getWorkerName(),
             'job' => $shift->getWorker()->getJob()->getJob(),
-
+            'id' => $shift->getId()
 
         ];
         $shiftarray[] = $shiftObj;          //to push it in shiftArray
