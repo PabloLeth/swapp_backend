@@ -24,6 +24,21 @@ class ShiftRepository extends ServiceEntityRepository
         $query = $em->createQuery($sql);
         $query->setParameter(1, $dateFrom);
         $query->setParameter(2, $dateTo);
+    
+        
+        
+        $rotasRange = $query->getResult();
+        return $rotasRange;
+    }
+    public function getRotaRangeWorker($em, $dateFrom, $dateTo, $workerId)
+    {
+        $sql = "SELECT s FROM App\Entity\Shift s WHERE s.worker = ?3 AND s.startShift >= ?1 AND s.startShift <= ?2";
+        
+
+        $query = $em->createQuery($sql);
+        $query->setParameter(1, $dateFrom);
+        $query->setParameter(2, $dateTo);
+        $query->setParameter(3, $workerId);
         
         
         $rotasRange = $query->getResult();

@@ -24,7 +24,7 @@ class ShiftController extends AbstractController
      * @Route("/pool", name="shift_pool", methods={"GET"})
      */
     public function pool( ShiftRepository $shiftRepo): Response
-    {
+    { /*Function to bring ALL shifts on swapping*/
         $shifts = $shiftRepo->findBy(
             ['swapping' => 1]
         );
@@ -36,7 +36,7 @@ class ShiftController extends AbstractController
      * @Route("/new", name="shift_new", methods={"POST"})
      */
     public function newShift( Request $request, EntityManagerInterface $em, WorkersRepository $wRepo, ShiftTypeRepository $sTRepo ): Response
-    {
+    {/*function to create shifts*/
         $userLogged  = $this->getUser();                 /* funcion que devuele el usuario que esta logeado */
         $bodyRequest = $request->getContent();           /* sacamos el contenido de la request del POST */
         $shiftObjs   = json_decode($bodyRequest, true);  /*second parameter transforms it in asociative array*/
@@ -87,27 +87,58 @@ class ShiftController extends AbstractController
      * @Route("/rota", name="shift_rota_POST", methods={"POST"})
      */
     public function rangeRota( Request $request, EntityManagerInterface $em, WorkersRepository $wRepo, ShiftTypeRepository $sTRepo, ShiftRepository $sRepo): Response
-    {/*Funcion que deuvleve TODOS los turnos del trabajador logueado */
+    {/*Funcion que deuvleve los turnos con los rangos de fecha */
         $bodyRequest = $request->getContent();
-        
         $reqArray = json_decode($bodyRequest, true);
 
-        // $dateFromctlr = new \DateTime($reqArray['dateFromjsn']);
-        // $dateToctlr = new \DateTime($reqArray['dateTojsn']);
         $dateFromctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u',$reqArray['dateFromjsn']);
         $dateToctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u',$reqArray['dateTojsn']);
-        // $dateFromctlr =$reqArray['dateFromjsn'];
-        // $dateToctlr =$reqArray['dateTojsn'];
-        // $dateFromctlr = "2021-03-14 12:00:00.000000";
-        // $dateToctlr = "2021-03-16 12:00:00.000000";
-       
+      
         $shifts = $sRepo->getRotaRange($em, $dateFromctlr, $dateToctlr);
 
-       
-        
         return new JsonResponse( $this-> serialize($shifts));
     }
-   private function serialize($arrayShifts){
+
+     /**
+     * @Route("/rotauser", name="shift_rota_user", methods={"POST"})
+     */
+    public function rotaUser( Request $request, EntityManagerInterface $em, WorkersRepository $wRepo, ShiftTypeRepository $sTRepo, ShiftRepository $sRepo): Response
+    {/*Funcion que devuleve los turnos con los rangos de fecha del usuario logueado */
+        $userLogged  = $this->getUser();
+        // $user = $sRepo->findBy(['worker' => $userLogged->getId()]);
+        $userId = $userLogged->getId(); 
+        $bodyRequest = $request->getContent();
+        $reqArray = json_decode($bodyRequest, true);
+
+        $dateFromctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u',$reqArray['dateFromjsn']);
+        $dateToctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u',$reqArray['dateTojsn']);
+      
+        $shifts = $sRepo->getRotaRangeWorker($em, $dateFromctlr, $dateToctlr, $userId);
+
+        return new JsonResponse( $this-> serialize($shifts));
+    }
+    /**
+     * @Route("/swapping/{id}", name="user_swapping", methods={"PUT"})
+     */
+    public function swapping($id,Request $request, EntityManagerInterface $em, WorkersRepository $wRepo, ShiftTypeRepository $sTRepo, ShiftRepository $sRepo) : Response
+    {/**/
+
+        //necesita verificacion de que el usuario es el dueño de este turno
+        $shift = $sRepo->find($id);
+        $bodyRequest = $request->getContent();
+        $reqArray = json_decode($bodyRequest, true);
+
+        $shift->setSwapping($reqArray['swapping']);
+        $em->persist($shift);
+        $em->flush();
+        
+        return new JsonResponse(['answer'=> 'change realized successfully']);
+    }
+
+
+
+   private function serialize($arrayShifts)
+   {/*funcion para serializar turnos*/
     $shiftarray = [];
 
     foreach ($arrayShifts as $shift){
@@ -127,7 +158,8 @@ class ShiftController extends AbstractController
         $shiftarray[] = $shiftObj;          //to push it in shiftArray
     }
     return $shiftarray;
-   }/*funcion para serializar */
+   }
+
 
 
 
