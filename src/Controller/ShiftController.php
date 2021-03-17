@@ -33,7 +33,7 @@ class ShiftController extends AbstractController
         return new JsonResponse($this-> serialize($shifts));
     }
     /**
-     * @Route("/new", name="shift_new", methods={"POST"})
+     * @Route("/manager/new", name="shift_new", methods={"POST"})
      */
     public function newShift( Request $request, EntityManagerInterface $em, WorkersRepository $wRepo, ShiftTypeRepository $sTRepo ): Response
     {/*function to create shifts*/
@@ -72,7 +72,7 @@ class ShiftController extends AbstractController
      * @Route("/rota", name="shift_rota", methods={"GET"})
      */
     public function rota( ShiftRepository $shiftRepo, WorkersRepository $wRepo): Response
-    {/*Funcion que deuvleve TODOS los turnos del trabajador logueado */
+    {/*Funcion que deuvleve TODOS los TURNOS del USUARIO LOGUEADO           ELIMINAR??*/
 
         $userLogged  = $this->getUser();
 
@@ -87,12 +87,18 @@ class ShiftController extends AbstractController
      * @Route("/rota", name="shift_rota_POST", methods={"POST"})
      */
     public function rangeRota( Request $request, EntityManagerInterface $em, WorkersRepository $wRepo, ShiftTypeRepository $sTRepo, ShiftRepository $sRepo): Response
-    {/*Funcion que deuvleve los turnos con los rangos de fecha */
+    {/*Funcion que deuvleve los TURNOS con los RANGOS DE FECHA              ELIMINAR?? */
         $bodyRequest = $request->getContent();
         $reqArray = json_decode($bodyRequest, true);
 
-        $dateFromctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u',$reqArray['dateFromjsn']);
-        $dateToctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u',$reqArray['dateTojsn']);
+        $dateFromAddedTime = $reqArray['dateFromjsn']." 00:00:00.000000";
+        $dateToAddedTime = $reqArray['dateTojsn']." 23:59:59.000000";
+        $dateFromctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u',$dateFromAddedTime);
+        $dateToctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u', $dateToAddedTime);
+
+        // $dateFromctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u',$reqArray['dateFromjsn']);
+        // $dateToctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u',$reqArray['dateTojsn']);
+       
       
         $shifts = $sRepo->getRotaRange($em, $dateFromctlr, $dateToctlr);
 
@@ -103,12 +109,18 @@ class ShiftController extends AbstractController
      * @Route("/rotauser", name="shift_rota_user", methods={"POST"})
      */
     public function rotaUser( Request $request, EntityManagerInterface $em, WorkersRepository $wRepo, ShiftTypeRepository $sTRepo, ShiftRepository $sRepo): Response
-    {/*Funcion que devuleve los turnos con los rangos de fecha del usuario logueado */
+    {/*Funcion que devuleve los TURNOS con los RANGOS DE FECHA del USUARIO LOGUEADO */
         $userLogged  = $this->getUser();
         // $user = $sRepo->findBy(['worker' => $userLogged->getId()]);
         $userId = $userLogged->getId(); 
         $bodyRequest = $request->getContent();
         $reqArray = json_decode($bodyRequest, true);
+
+        /*      para cuando es solo la fecha sin hora*/ 
+        // $dateFromAddedTime = $reqArray['dateFromjsn']." 00:00:00.000000";
+        // $dateToAddedTime = $reqArray['dateTojsn']." 23:59:59.000000";
+        // $dateFromctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u',$dateFromAddedTime);
+        // $dateToctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u', $dateToAddedTime);
 
         $dateFromctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u',$reqArray['dateFromjsn']);
         $dateToctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u',$reqArray['dateTojsn']);
@@ -152,10 +164,71 @@ class ShiftController extends AbstractController
         return new JsonResponse(['answer'=> 'change completed successfully']);
     }
 
+     /**
+     * @Route("/manager/rotacheck", name="shift_mg_rotacheck", methods={"POST"})
+     */
+    public function rotaCheck( Request $request, EntityManagerInterface $em, WorkersRepository $wRepo, ShiftTypeRepository $sTRepo, ShiftRepository $sRepo): Response
+    {/*Funcion de MANAGER que devuleve los TURNOS con los RANGOS DE FECHA del BRANCH del MANAGER LOGUEADO  EnCoNsTrUcCiOn*/
+        $userLogged  = $this->getUser();
+      
+        $userBranch = $userLogged->getBranch(); 
+        $bodyRequest = $request->getContent();
+        $reqArray = json_decode($bodyRequest, true);
 
+        $dateFromAddedTime = $reqArray['dateFromjsn']." 00:00:00.000000";
+        $dateToAddedTime = $reqArray['dateTojsn']." 23:59:59.000000";
+        $dateFromctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u',$dateFromAddedTime);
+        $dateToctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u', $dateToAddedTime);
+    
+        
+        $shifts = $sRepo->getRotaBranch($em, $dateFromctlr, $dateToctlr, $userBranch);
+        if(count($shifts) === 0){
+            return new Json(['message'=>'taht was a mistake'], 240); //catch 240 para mandar una rota vacia
+        }
+                        //lanzar comprobacion de $shifts esta vacio
+                        //si vacio, enviar notificacion de "rota semanal vacia" para poder pintar en el front rota vacia con los trabajadores
+                        //si lleno que envie shifts al front pero con serialize especifico para tabla:"serializeRota". 
 
+                        
+        $workers = $wRepo->getWorkersBranch($em, $userBranch);
+        $answer = [];                
+        $shifts = [];
+          foreach($workers as $worker){
+            $worker->getId();
+            $workerShifts = $sRepo->getRotaRangeWorker($em, $dateFromctlr, $dateToctlr, $worker);
+
+            foreach ($workerShifts as $workerShift){
+            
+                $shiftWorkerObj = [
+                    
+                'id' => $workerShift->getId(),
+                'startShift' => $workerShift->getStartShift(),
+                'endShift' => $workerShift->getEndShift(),
+                'shiftType' => $workerShift->getShiftType()->getShiftType()   
+                ];
+                $shifts[] = $shiftWorkerObj;    
+
+            }
+            $workerObj = [
+            'worker' => $worker->getWorkerName(),
+            'shifts' => $shifts
+            ];
+            $answer[] = $workerObj;
+            $shifts= [];
+          } 
+             
+        return new JsonResponse($answer);
+    }
+    
+    /**
+     * @Route("/manager/rotachange", name="shift_mg_rotachange", methods={"POST"})
+     */
+    public function rotaChange( Request $request, EntityManagerInterface $em, WorkersRepository $wRepo, ShiftTypeRepository $sTRepo, ShiftRepository $sRepo): Response
+    {/*Funcion de MANAGER que update los TURNOS con los RANGOS DE FECHA del BRANCH del MANAGER LOGUEADO */
+        
+    }
    private function serialize($arrayShifts)
-   {/*funcion para serializar turnos*/
+   {/*funcion para serializar TURNOS*/
     $shiftarray = [];
 
     foreach ($arrayShifts as $shift){
@@ -178,7 +251,7 @@ class ShiftController extends AbstractController
    }
 
 
-
+  
 
 
 

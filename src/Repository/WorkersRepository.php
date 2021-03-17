@@ -36,6 +36,29 @@ class WorkersRepository extends ServiceEntityRepository implements PasswordUpgra
         $this->_em->flush();
     }
 
+    public function getWorkersBranch($em, $branchId)
+    {
+        
+        $sql = "SELECT w FROM App\Entity\Workers w WHERE w.branch = ?1";
+        
+
+        $query = $em->createQuery($sql);
+        $query->setParameter(1, $branchId);
+        
+        
+        $workers = $query->getResult();
+        return $workers;
+    }
+    
+
+
+
+
+
+
+
+
+
     // /**
     //  * @return Workers[] Returns an array of Workers objects
     //  */
