@@ -18,7 +18,8 @@ class ShiftRepository extends ServiceEntityRepository
 
     public function getRotaRange($em, $dateFrom, $dateTo)
     {/*quering all rotas form a range of dates*/
-        $sql = "SELECT s FROM App\Entity\Shift s WHERE s.startShift >= ?1 AND s.startShift <= ?2";
+        // $sql = "SELECT s FROM App\Entity\Shift s WHERE s.startShift >= ?1 AND s.startShift <= ?2";
+        $sql = "SELECT s FROM App\Entity\Shift s WHERE s.date >= ?1 AND s.date <= ?2";
   
         
 
@@ -33,7 +34,7 @@ class ShiftRepository extends ServiceEntityRepository
     }
     public function getRotaRangeWorker($em, $dateFrom, $dateTo, $workerId)
     {/* quering rota from a worker in a range of dates*/
-        $sql = "SELECT s FROM App\Entity\Shift s WHERE s.worker = ?3 AND s.startShift >= ?1 AND s.startShift <= ?2";
+        $sql = "SELECT s FROM App\Entity\Shift s WHERE s.worker = ?3 AND s.date >= ?1 AND s.date <= ?2";
         
 
         $query = $em->createQuery($sql);
@@ -47,7 +48,7 @@ class ShiftRepository extends ServiceEntityRepository
     }
     public function getRotaBranch($em, $dateFrom, $dateTo, $branchId)
     {/* quering rota from a branch in a range of dates*/
-        $sql = "SELECT s FROM App\Entity\Shift s WHERE s.branch = ?3 AND s.startShift >= ?1 AND s.startShift <= ?2";
+        $sql = "SELECT s FROM App\Entity\Shift s WHERE s.branch = ?3 AND s.date >= ?1 AND s.date <= ?2";
         
 
         $query = $em->createQuery($sql);

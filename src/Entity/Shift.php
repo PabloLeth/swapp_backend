@@ -24,16 +24,20 @@ class Shift
     /**
      * @var int
      *
-     * @ORM\Column(name="start_shift", type="datetime", nullable=false)
+     * @ORM\Column(name="start_shift", type="datetime", nullable=true)
      */
     private $startShift;
 
     /**
      * @var int
      *
-     * @ORM\Column(name="end_shift", type="datetime", nullable=false)
+     * @ORM\Column(name="end_shift", type="datetime", nullable=true)
      */
     private $endShift;
+      /**
+     * @ORM\Column(name="date", type="datetime", nullable=false)
+     */
+    private $date;
 
     /**
      * @var bool
@@ -41,6 +45,12 @@ class Shift
      * @ORM\Column(name="swapping", type="boolean", nullable=false)
      */
     private $swapping = '0';
+ /**
+     * @var bool
+     *
+     * @ORM\Column(name="active", type="boolean", nullable=false)
+     */
+    private $active = '0';
 
      /**
      * @var bool
@@ -77,6 +87,8 @@ class Shift
      * })
      */
     private $worker;
+
+  
 
     public function getId(): ?int
     {
@@ -119,6 +131,21 @@ class Shift
         return $this;
     }
 
+public function getActive(): ?bool
+{
+    return $this->active;
+}
+
+public function setActive(bool $active): self
+{
+    $this->active = $active;
+
+    return $this;
+}
+
+
+
+  
     public function getSwappable(): ?bool
     {
         return $this->swappable;
@@ -163,6 +190,18 @@ class Shift
     public function setWorker(?Workers $worker): self
     {
         $this->worker = $worker;
+
+        return $this;
+    }
+
+    public function getDate(): ?\DateTimeInterface
+    {
+        return $this->date;
+    }
+
+    public function setDate(\DateTimeInterface $date): self
+    {
+        $this->date = $date;
 
         return $this;
     }

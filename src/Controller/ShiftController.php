@@ -117,13 +117,13 @@ class ShiftController extends AbstractController
         $reqArray = json_decode($bodyRequest, true);
 
         /*      para cuando es solo la fecha sin hora*/ 
-        // $dateFromAddedTime = $reqArray['dateFromjsn']." 00:00:00.000000";
-        // $dateToAddedTime = $reqArray['dateTojsn']." 23:59:59.000000";
-        // $dateFromctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u',$dateFromAddedTime);
-        // $dateToctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u', $dateToAddedTime);
+        $dateFromAddedTime = $reqArray['dateFromjsn']." 00:00:00.000000";
+        $dateToAddedTime = $reqArray['dateTojsn']." 23:59:59.000000";
+        $dateFromctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u',$dateFromAddedTime);
+        $dateToctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u', $dateToAddedTime);
 
-        $dateFromctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u',$reqArray['dateFromjsn']);
-        $dateToctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u',$reqArray['dateTojsn']);
+        // $dateFromctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u',$reqArray['dateFromjsn']);
+        // $dateToctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u',$reqArray['dateTojsn']);
       
         $shifts = $sRepo->getRotaRangeWorker($em, $dateFromctlr, $dateToctlr, $userId);
 
@@ -169,6 +169,7 @@ class ShiftController extends AbstractController
      */
     public function rotaCheck( Request $request, EntityManagerInterface $em, WorkersRepository $wRepo, ShiftTypeRepository $sTRepo, ShiftRepository $sRepo): Response
     {/*Funcion de MANAGER que devuleve los TURNOS con los RANGOS DE FECHA del BRANCH del MANAGER LOGUEADO  EnCoNsTrUcCiOn*/
+                        
         $userLogged  = $this->getUser();
       
         $userBranch = $userLogged->getBranch(); 
@@ -183,11 +184,19 @@ class ShiftController extends AbstractController
         
         $shifts = $sRepo->getRotaBranch($em, $dateFromctlr, $dateToctlr, $userBranch);
         if(count($shifts) === 0){
-            return new Json(['message'=>'taht was a mistake'], 240); //catch 240 para mandar una rota vacia
+            $workers = $wRepo->getWorkersBranch($em,$userBranch);
+            $answer = [];
+            foreach($workers as $worker){
+            
+                $answer[] = [
+                    'worker' => $worker->getWorkerName(),
+                    'id' => $worker->getId()
+            ];
+            }
+
+            return new JsonResponse($answer, 240); //catch 240 para mandar una rota vacia
         }
-                        //lanzar comprobacion de $shifts esta vacio
-                        //si vacio, enviar notificacion de "rota semanal vacia" para poder pintar en el front rota vacia con los trabajadores
-                        //si lleno que envie shifts al front pero con serialize especifico para tabla:"serializeRota". 
+                     
 
                         
         $workers = $wRepo->getWorkersBranch($em, $userBranch);
@@ -211,6 +220,7 @@ class ShiftController extends AbstractController
             }
             $workerObj = [
             'worker' => $worker->getWorkerName(),
+            'id' => $worker->getId(), /* no testeado */
             'shifts' => $shifts
             ];
             $answer[] = $workerObj;
