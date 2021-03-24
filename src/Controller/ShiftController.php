@@ -39,23 +39,23 @@ class ShiftController extends AbstractController
     {/*function to create shifts*/
         $userLogged  = $this->getUser();                 /* funcion que devuele el usuario que esta logeado */
         $bodyRequest = $request->getContent();           /* sacamos el contenido de la request del POST */
-        $shiftObjs   = json_decode($bodyRequest, true);  /*second parameter transforms it in asociative array*/
+        $shiftObjs   = json_decode($bodyRequest, true);  /*second parameter 'true' transforms it in asociative array*/
 
         foreach ($shiftObjs as $shiftObj ){                /*para mas de un caso hacemos un bucle para cada caso*/
 
-      
+                                                            /*necesito verificar que vienen startshift y end shift del front*/
             $shift = new Shift();
-            $shift->setStartShift(new \DateTime($shiftObj['startShift']));/* testear fallo al introducir fechas */
+            $shift->setStartShift(new \DateTime($shiftObj['startShift']));/* testear fallo al introducir fechas ex:"2021-03-12 12:00:00.000"*/
             $shift->setEndShift(new \DateTime($shiftObj['endShift']));/* testear fallo al introducir fechas */
-        
+            $shift->setDate(new \DateTime($shiftObj['date']));
             $shift->setBranch($userLogged->getBranch()); /* testear posible fallo. posiblemente depurado */
 
             $workerObj = $wRepo->find($shiftObj['worker_id']); /* busca por el id que recibe del front para crear el objeto*/
-            $shiftTypeObj = $sTRepo->find($shiftObj['shiftType']);
+            $shiftTypeObj = $sTRepo->find($shiftObj['shiftType']); /* necesito que el front me mande el id, 1 o 2 */
             
             $shift->setWorker($workerObj);
             $shift->setShiftType($shiftTypeObj);
-            $shift->setSwappable($shiftObj['swappable']);
+            $shift->setSwappable($shiftObj['swappable']);   /* añadir datos por defecto*/
             $shift->setSwapping($shiftObj['swapping']);
             
             $em->persist($shift);
@@ -248,6 +248,7 @@ class ShiftController extends AbstractController
             'endShift' => $shift->getEndShift(),
             'swapping' => $shift->getSwapping(),
             'swappable' => $shift->getSwappable(),
+            'active' => $shift->getActive(),
             'branch' => $shift->getBranch()->getBranchName(),
             'shiftType' => $shift->getShiftType()->getShiftType(),
             'worker' => $shift->getWorker()->getWorkerName(),
