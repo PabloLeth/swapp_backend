@@ -44,4 +44,5 @@ security:
     access_control:
         # - { path: ^/admin, roles: ROLE_ADMIN }
         # - { path: ^/profile, roles: ROLE_USER }
-         - { path: ^/shift/mg, roles: ROLE_MANAGER}
+        # - { path: ^/shift, roles: ROLE_USER }
+        # - { path: ^/shift/manager/, roles: ROLE_MANAGER}

@@ -19,6 +19,8 @@ class ShiftTypeRepository extends ServiceEntityRepository
         parent::__construct($registry, ShiftType::class);
     }
 
+   
+
     // /**
     //  * @return ShiftType[] Returns an array of ShiftType objects
     //  */

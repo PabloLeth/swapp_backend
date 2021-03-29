@@ -39,26 +39,32 @@ class ShiftController extends AbstractController
     {/*function to create shifts*/
         $userLogged  = $this->getUser();                 /* funcion que devuele el usuario que esta logeado */
         $bodyRequest = $request->getContent();           /* sacamos el contenido de la request del POST */
-        $shiftObjs   = json_decode($bodyRequest, true);  /*second parameter 'true' transforms it in asociative array*/
+        $shiftsObj   = json_decode($bodyRequest, true);  /*second parameter 'true' transforms it in asociative array*/
 
-        foreach ($shiftObjs as $shiftObj ){                /*para mas de un caso hacemos un bucle para cada caso*/
+        foreach ($shiftsObj as $workerObj ){                /*para mas de un caso hacemos un bucle para cada caso*/
+            $worker = $wRepo->find($workerObj['id']);
+          
+            foreach ($workerObj['shifts'] as $shift){
 
-                                                            /*necesito verificar que vienen startshift y end shift del front*/
-            $shift = new Shift();
-            $shift->setStartShift(new \DateTime($shiftObj['startShift']));/* testear fallo al introducir fechas ex:"2021-03-12 12:00:00.000"*/
-            $shift->setEndShift(new \DateTime($shiftObj['endShift']));/* testear fallo al introducir fechas */
-            $shift->setDate(new \DateTime($shiftObj['date']));
-            $shift->setBranch($userLogged->getBranch()); /* testear posible fallo. posiblemente depurado */
+                $newshift = new Shift();
+                $newshift->setStartShift(new \DateTime($shift['startShift']));/* testear fallo al introducir fechas ex:"2021-03-12 12:00:00.000"*/
+                $newshift->setEndShift(new \DateTime($shift['endShift']));/* testear fallo al introducir fechas */
+                $newshift->setDate(new \DateTime($shift['date']));
+                $newshift->setBranch($userLogged->getBranch()); /* testear posible fallo. posiblemente depurado */
+     
+                /* busca por el id que recibe del front para crear el objeto*/
+                $shiftTypeObj = $sTRepo->find($shift['shiftType']); /* necesito que el front me mande el id, 1 o 2 */
+                
+                $newshift->setWorker($worker);
+                $newshift->setShiftType($shiftTypeObj);
+                $newshift->setActive($shift['active']);
+                // $shift->setSwappable($workerObj['swappable']);   /* añadir datos por defecto*/
+                // $shift->setSwapping($workerObj['swapping']);
+                
+                $em->persist($newshift);
+           }
 
-            $workerObj = $wRepo->find($shiftObj['worker_id']); /* busca por el id que recibe del front para crear el objeto*/
-            $shiftTypeObj = $sTRepo->find($shiftObj['shiftType']); /* necesito que el front me mande el id, 1 o 2 */
-            
-            $shift->setWorker($workerObj);
-            $shift->setShiftType($shiftTypeObj);
-            $shift->setSwappable($shiftObj['swappable']);   /* añadir datos por defecto*/
-            $shift->setSwapping($shiftObj['swapping']);
-            
-            $em->persist($shift);
+                                                            
         }
         $em->flush();
 
@@ -183,19 +189,19 @@ class ShiftController extends AbstractController
     
         
         $shifts = $sRepo->getRotaBranch($em, $dateFromctlr, $dateToctlr, $userBranch);
-        if(count($shifts) === 0){
-            $workers = $wRepo->getWorkersBranch($em,$userBranch);
-            $answer = [];
-            foreach($workers as $worker){
+        // if(count($shifts) === 0){
+        //     $workers = $wRepo->getWorkersBranch($em,$userBranch);
+        //     $answer = [];
+        //     foreach($workers as $worker){
             
-                $answer[] = [
-                    'worker' => $worker->getWorkerName(),
-                    'id' => $worker->getId()
-            ];
-            }
+        //         $answer[] = [
+        //             'worker' => $worker->getWorkerName(),
+        //             'id' => $worker->getId()
+        //     ];
+        //     }
 
-            return new JsonResponse($answer, 240); //catch 240 para mandar una rota vacia
-        }
+        //     return new JsonResponse($answer, 240); //catch 240 para mandar una rota vacia
+        // }
                      
 
                         
@@ -211,16 +217,18 @@ class ShiftController extends AbstractController
                 $shiftWorkerObj = [
                     
                 'id' => $workerShift->getId(),
+                'date' => $workerShift->getDate(),
                 'startShift' => $workerShift->getStartShift(),
                 'endShift' => $workerShift->getEndShift(),
-                'shiftType' => $workerShift->getShiftType()->getShiftType()   
+                'shiftType' => $workerShift->getShiftType()->getId(),
+                'active' => $workerShift->getActive()
                 ];
                 $shifts[] = $shiftWorkerObj;    
 
             }
             $workerObj = [
             'worker' => $worker->getWorkerName(),
-            'id' => $worker->getId(), /* no testeado */
+            'id' => $worker->getId(), 
             'shifts' => $shifts
             ];
             $answer[] = $workerObj;
