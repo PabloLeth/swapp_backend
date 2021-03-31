@@ -23,13 +23,34 @@ class ShiftController extends AbstractController
     /**
      * @Route("/pool", name="shift_pool", methods={"GET"})
      */
-    public function pool( ShiftRepository $shiftRepo): Response
+    public function pool(  EntityManagerInterface $em, ShiftRepository $shiftRepo): Response
     { /*Function to bring ALL shifts on swapping*/
-        $shifts = $shiftRepo->findBy(
-            ['swapping' => 1]
-        );
-      
+        $userLogged  = $this->getUser();
+        $userId = $userLogged->getId(); 
+        $userJob = $userLogged->getJob();
+
+        $shiftsOff = $shiftRepo->findDaysOff($em, $userId);
+        $pool = $shiftRepo->findSwappingByJobId($em, $userJob, $userId);
+        
+       $shifts = [];
+        foreach($pool as $spool){
+
+            $datespool = $spool->getDate();
+            $shiftTypepool = $spool->getShiftType();
+
+            foreach($shiftsOff as $shiftOff){
        
+                $dateOff = $shiftOff->getDate();
+                $shiftTypeOff = $shiftOff->getShiftType();
+
+                if ($datespool == $dateOff && $shiftTypepool == $shiftTypeOff){
+                    $shifts [] = $spool ;
+                }
+                
+        }
+        }
+
+
         return new JsonResponse($this-> serialize($shifts));
     }
     /**
@@ -188,7 +209,7 @@ class ShiftController extends AbstractController
         $dateToctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u', $dateToAddedTime);
     
         
-        $shifts = $sRepo->getRotaBranch($em, $dateFromctlr, $dateToctlr, $userBranch);
+        // $shifts = $sRepo->getRotaBranch($em, $dateFromctlr, $dateToctlr, $userBranch);
         // if(count($shifts) === 0){
         //     $workers = $wRepo->getWorkersBranch($em,$userBranch);
         //     $answer = [];
@@ -254,6 +275,7 @@ class ShiftController extends AbstractController
         $shiftObj = [
             'startShift' => $shift->getStartShift(),
             'endShift' => $shift->getEndShift(),
+            'date' => $shift->getDate(),
             'swapping' => $shift->getSwapping(),
             'swappable' => $shift->getSwappable(),
             'active' => $shift->getActive(),

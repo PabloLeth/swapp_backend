@@ -60,7 +60,34 @@ class ShiftRepository extends ServiceEntityRepository
         $rotasRange = $query->getResult();
         return $rotasRange;
     }
-    
+    public function findDaysOff($em, $id)
+    {
+        $sql = "SELECT s FROM App\Entity\Shift s WHERE s.active = ?1 AND s.worker = ?2";
+        
+        $query = $em->createQuery($sql);
+        $query->setParameter(1, false);
+        $query->setParameter(2, $id);
+        
+        $shiftsOff = $query->getResult();
+        return $shiftsOff;
+    }
+
+    public function matchMyOff($date, $shiftsOff)
+    {
+
+    }
+    public function findSwappingByJobId($em, $job, $id)
+    {
+        $sql = "SELECT s, sw FROM App\Entity\Shift s JOIN s.worker sw WHERE s.swapping = ?1 AND sw.job = ?2 AND s.worker != ?3";
+        
+        $query = $em->createQuery($sql);
+        $query->setParameter(1, 1);
+        $query->setParameter(2, $job);
+        $query->setParameter(3, $id);
+        
+        $swappingShifts = $query->getResult();
+        return $swappingShifts;
+    }
 
 
 
