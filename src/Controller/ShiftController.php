@@ -173,11 +173,11 @@ class ShiftController extends AbstractController
         $userLogged  = $this->getUser();
         $userId = $userLogged->getId();
         //?? necesitará verificacion de que el usuario es el dueño de este turno
-        $shift = $sRepo->find($id);
+        $shiftSent = $sRepo->find($id);
         $bodyRequest = $request->getContent();
         $reqArray = json_decode($bodyRequest, true);
-        $isSwappable = $shift->getSwappable();
-        $isSwapping = $shift->getSwapping();
+        $isSwappable = $shiftSent->getSwappable();
+        $isSwapping = $shiftSent->getSwapping();
       
         // devuelve 403 si no hay permisos o alguien introduce un id a proposito
         if ($isSwappable == 0 || $reqArray['swapping'] == 0 && $isSwapping == 0 ){
@@ -187,12 +187,26 @@ class ShiftController extends AbstractController
         if ($reqArray['swapping'] == 0){ //?? probablemente añadir doble condicional para comprobar el estado de swapping previo
             $userLogged = $this->getUser();
             $userId = $userLogged->getId();
-            $shift->setWorker($userLogged);
-            $shift->setSwappable(0);
-             // quizas añadir para cancelar el volver a cambiarlo una vez tomado aqui: $shift->setSwappable(0);
+
+            $dateSS =  $shiftSent->getDate();
+            $shiftTypeSS =  $shiftSent->getShiftType();
+            $workerSS = $shiftSent->getWorker();
+
+            // $userShiftOff = $sRepo->matchOff($em, $dateSS, $shiftTypeSS, $userId ) ;
+            $userShiftOff = $sRepo->findOneBy(array (
+                'date' => $dateSS,
+                'shiftType'=> $shiftTypeSS,
+                'worker'=>  $userLogged
+            )) ;
+
+             $userShiftOff->setWorker( $workerSS );
+            $shiftSent->setWorker( $userLogged );
+            $shiftSent->setSwappable(0);
+             // quizas añadir para cancelar el volver a cambiarlo una vez tomado aqui: $shiftSent->setSwappable(0);
         }
-        $shift->setSwapping($reqArray['swapping']);
-        $em->persist($shift);
+        $shiftSent->setSwapping($reqArray['swapping']);
+        $em->persist($shiftSent);
+        $em->persist($userShiftOff);
         $em->flush();
         
         return new JsonResponse(['answer'=> 'change completed successfully']);

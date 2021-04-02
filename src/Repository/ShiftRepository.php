@@ -72,9 +72,17 @@ class ShiftRepository extends ServiceEntityRepository
         return $shiftsOff;
     }
 
-    public function matchMyOff($date, $shiftsOff)
+    public function matchOff($em, $date, $shiftType, $id)
     {
-
+        $sql = "SELECT s FROM App\Entity\Shift s WHERE s.date = ?1 AND s.shiftType = ?2 AND s.worker = ?3";
+        
+        $query = $em->createQuery($sql);
+        $query->setParameter(1, $date);
+        $query->setParameter(2, $shiftType);
+        $query->setParameter(3, $id);
+        
+        $shiftOff = $query->getResult();
+        return $shiftOff;
     }
     public function findSwappingByJobId($em, $job, $id)
     {
