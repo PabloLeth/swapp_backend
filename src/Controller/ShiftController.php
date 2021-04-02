@@ -66,23 +66,30 @@ class ShiftController extends AbstractController
             $worker = $wRepo->find($workerObj['id']);
           
             foreach ($workerObj['shifts'] as $shift){
+                if (!isset($shift['id'])){
+              
+                    $newshift = new Shift();
+                    if(  isset($shift['startShift'])  ){
+                        $newshift->setStartShift(new \DateTime($shift['startShift']));/* testear fallo al introducir fechas ex:"2021-03-12 12:00:00.000"*/
+                    }
+                    if(  isset($shift['endShift'])  ){
 
-                $newshift = new Shift();
-                $newshift->setStartShift(new \DateTime($shift['startShift']));/* testear fallo al introducir fechas ex:"2021-03-12 12:00:00.000"*/
-                $newshift->setEndShift(new \DateTime($shift['endShift']));/* testear fallo al introducir fechas */
-                $newshift->setDate(new \DateTime($shift['date']));
-                $newshift->setBranch($userLogged->getBranch()); /* testear posible fallo. posiblemente depurado */
-     
-                /* busca por el id que recibe del front para crear el objeto*/
-                $shiftTypeObj = $sTRepo->find($shift['shiftType']); /* necesito que el front me mande el id, 1 o 2 */
-                
-                $newshift->setWorker($worker);
-                $newshift->setShiftType($shiftTypeObj);
-                $newshift->setActive($shift['active']);
-                // $shift->setSwappable($workerObj['swappable']);   /* añadir datos por defecto*/
-                // $shift->setSwapping($workerObj['swapping']);
-                
-                $em->persist($newshift);
+                        $newshift->setEndShift(new \DateTime($shift['endShift']));/* testear fallo al introducir fechas */
+                    }
+                    $newshift->setDate(new \DateTime($shift['date']));
+                    $newshift->setBranch($userLogged->getBranch()); /* testear posible fallo. posiblemente depurado */
+         
+                    /* busca por el id que recibe del front para crear el objeto*/
+                    $shiftTypeObj = $sTRepo->find($shift['shiftType']); /* necesito que el front me mande el id, 1 o 2 */
+                    
+                    $newshift->setWorker($worker);
+                    $newshift->setShiftType($shiftTypeObj);
+                    $newshift->setActive($shift['active']);
+                    // $shift->setSwappable($workerObj['swappable']);   /* añadir datos por defecto*/
+                    // $shift->setSwapping($workerObj['swapping']);
+                    
+                    $em->persist($newshift);
+                }
            }
 
                                                             
