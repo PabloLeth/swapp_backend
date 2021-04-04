@@ -85,8 +85,8 @@ class ShiftController extends AbstractController
                     $newshift->setWorker($worker);
                     $newshift->setShiftType($shiftTypeObj);
                     $newshift->setActive($shift['active']);
-                    // $shift->setSwappable($workerObj['swappable']);   /* añadir datos por defecto*/
-                    // $shift->setSwapping($workerObj['swapping']);
+                     $newshift->setSwappable(1);   /* añadir datos por defecto*/
+                     $newshift->setSwapping(0);
                     
                     $em->persist($newshift);
                 }
@@ -203,10 +203,10 @@ class ShiftController extends AbstractController
             $shiftSent->setWorker( $userLogged );
             $shiftSent->setSwappable(0);
              // quizas añadir para cancelar el volver a cambiarlo una vez tomado aqui: $shiftSent->setSwappable(0);
+             $em->persist($userShiftOff);
         }
         $shiftSent->setSwapping($reqArray['swapping']);
         $em->persist($shiftSent);
-        $em->persist($userShiftOff);
         $em->flush();
         
         return new JsonResponse(['answer'=> 'change completed successfully']);
@@ -263,7 +263,8 @@ class ShiftController extends AbstractController
                 'startShift' => $workerShift->getStartShift(),
                 'endShift' => $workerShift->getEndShift(),
                 'shiftType' => $workerShift->getShiftType()->getId(),
-                'active' => $workerShift->getActive()
+                'active' => $workerShift->getActive(),
+                'branch' => $workerShift->getBranch()->getId()
                 ];
                 $shifts[] = $shiftWorkerObj;    
 
