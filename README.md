@@ -8,11 +8,11 @@ To get started you should clone this respository on your local directory
 * `$git clone https://github.com/PabloLeth/swapp_backend.git`
 
 Then in your project directory get composer installed (remember using sudo if you are a linux user)
-* `apt install composer`
+* `$ apt install composer`
 
 
 Next get the ORM pack for symfony:
-* `composer require symfony/orm-pack`
+* `$ composer require symfony/orm-pack`
 
 Because this server uses jwt as a token generator we need to generte the keys:
 
