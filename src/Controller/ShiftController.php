@@ -58,11 +58,11 @@ class ShiftController extends AbstractController
      */
     public function newShift( Request $request, EntityManagerInterface $em, WorkersRepository $wRepo, ShiftTypeRepository $sTRepo ): Response
     {/*function to create shifts*/
-        $userLogged  = $this->getUser();                 /* funcion que devuele el usuario que esta logeado */
-        $bodyRequest = $request->getContent();           /* sacamos el contenido de la request del POST */
-        $shiftsObj   = json_decode($bodyRequest, true);  /*second parameter 'true' transforms it in asociative array*/
+        $userLogged  = $this->getUser();             
+        $bodyRequest = $request->getContent();          
+        $shiftsObj   = json_decode($bodyRequest, true); 
 
-        foreach ($shiftsObj as $workerObj ){                /*para mas de un caso hacemos un bucle para cada caso*/
+        foreach ($shiftsObj as $workerObj ){                
             $worker = $wRepo->find($workerObj['id']);
           
             foreach ($workerObj['shifts'] as $shift){
@@ -70,22 +70,22 @@ class ShiftController extends AbstractController
               
                     $newshift = new Shift();
                     if(  isset($shift['startShift'])  ){
-                        $newshift->setStartShift(new \DateTime($shift['startShift']));/* testear fallo al introducir fechas ex:"2021-03-12 12:00:00.000"*/
+                        $newshift->setStartShift(new \DateTime($shift['startShift']));
                     }
                     if(  isset($shift['endShift'])  ){
 
-                        $newshift->setEndShift(new \DateTime($shift['endShift']));/* testear fallo al introducir fechas */
+                        $newshift->setEndShift(new \DateTime($shift['endShift']));
                     }
                     $newshift->setDate(new \DateTime($shift['date']));
-                    $newshift->setBranch($userLogged->getBranch()); /* testear posible fallo. posiblemente depurado */
+                    $newshift->setBranch($userLogged->getBranch()); 
          
-                    /* busca por el id que recibe del front para crear el objeto*/
-                    $shiftTypeObj = $sTRepo->find($shift['shiftType']); /* necesito que el front me mande el id, 1 o 2 */
+                  
+                    $shiftTypeObj = $sTRepo->find($shift['shiftType']); 
                     
                     $newshift->setWorker($worker);
                     $newshift->setShiftType($shiftTypeObj);
                     $newshift->setActive($shift['active']);
-                     $newshift->setSwappable(1);   /* añadir datos por defecto*/
+                     $newshift->setSwappable(1);   
                      $newshift->setSwapping(0);
                     
                     $em->persist($newshift);
@@ -106,7 +106,7 @@ class ShiftController extends AbstractController
      * @Route("/rota", name="shift_rota", methods={"GET"})
      */
     public function rota( ShiftRepository $shiftRepo, WorkersRepository $wRepo): Response
-    {/*Funcion que deuvleve TODOS los TURNOS del USUARIO LOGUEADO           ELIMINAR??*/
+    {/*Funcion que deuvleve TODOS los TURNOS del USUARIO LOGUEADO         */
 
         $userLogged  = $this->getUser();
 
@@ -121,7 +121,7 @@ class ShiftController extends AbstractController
      * @Route("/rota", name="shift_rota_POST", methods={"POST"})
      */
     public function rangeRota( Request $request, EntityManagerInterface $em, WorkersRepository $wRepo, ShiftTypeRepository $sTRepo, ShiftRepository $sRepo): Response
-    {/*Funcion que deuvleve los TURNOS con los RANGOS DE FECHA              ELIMINAR?? */
+    {/*Funcion que deuvleve los TURNOS con los RANGOS DE FECHA              */
         $bodyRequest = $request->getContent();
         $reqArray = json_decode($bodyRequest, true);
 
@@ -130,8 +130,7 @@ class ShiftController extends AbstractController
         $dateFromctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u',$dateFromAddedTime);
         $dateToctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u', $dateToAddedTime);
 
-        // $dateFromctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u',$reqArray['dateFromjsn']);
-        // $dateToctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u',$reqArray['dateTojsn']);
+        
        
       
         $shifts = $sRepo->getRotaRange($em, $dateFromctlr, $dateToctlr);
@@ -145,20 +144,18 @@ class ShiftController extends AbstractController
     public function rotaUser( Request $request, EntityManagerInterface $em, WorkersRepository $wRepo, ShiftTypeRepository $sTRepo, ShiftRepository $sRepo): Response
     {/*Funcion que devuleve los TURNOS con los RANGOS DE FECHA del USUARIO LOGUEADO */
         $userLogged  = $this->getUser();
-        // $user = $sRepo->findBy(['worker' => $userLogged->getId()]);
+        
         $userId = $userLogged->getId(); 
         $bodyRequest = $request->getContent();
         $reqArray = json_decode($bodyRequest, true);
 
-        /*      para cuando es solo la fecha sin hora*/ 
+       
         $dateFromAddedTime = $reqArray['dateFromjsn']." 00:00:00.000000";
         $dateToAddedTime = $reqArray['dateTojsn']." 23:59:59.000000";
         $dateFromctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u',$dateFromAddedTime);
         $dateToctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u', $dateToAddedTime);
 
-        // $dateFromctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u',$reqArray['dateFromjsn']);
-        // $dateToctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u',$reqArray['dateTojsn']);
-      
+        
         $shifts = $sRepo->getRotaRangeWorker($em, $dateFromctlr, $dateToctlr, $userId);
 
         return new JsonResponse( $this-> serialize($shifts));
@@ -172,19 +169,18 @@ class ShiftController extends AbstractController
 
         $userLogged  = $this->getUser();
         $userId = $userLogged->getId();
-        //?? necesitará verificacion de que el usuario es el dueño de este turno
+     
         $shiftSent = $sRepo->find($id);
         $bodyRequest = $request->getContent();
         $reqArray = json_decode($bodyRequest, true);
         $isSwappable = $shiftSent->getSwappable();
         $isSwapping = $shiftSent->getSwapping();
       
-        // devuelve 403 si no hay permisos o alguien introduce un id a proposito
         if ($isSwappable == 0 || $reqArray['swapping'] == 0 && $isSwapping == 0 ){
             return new JsonResponse(['answer'=> 'there is no permission, contact with your manager'], 403);
         }
-        //condicional para tomar el turno
-        if ($reqArray['swapping'] == 0){ //?? probablemente añadir doble condicional para comprobar el estado de swapping previo
+   
+        if ($reqArray['swapping'] == 0){ 
             $userLogged = $this->getUser();
             $userId = $userLogged->getId();
 
@@ -192,7 +188,7 @@ class ShiftController extends AbstractController
             $shiftTypeSS =  $shiftSent->getShiftType();
             $workerSS = $shiftSent->getWorker();
 
-            // $userShiftOff = $sRepo->matchOff($em, $dateSS, $shiftTypeSS, $userId ) ;
+          
             $userShiftOff = $sRepo->findOneBy(array (
                 'date' => $dateSS,
                 'shiftType'=> $shiftTypeSS,
@@ -202,7 +198,7 @@ class ShiftController extends AbstractController
              $userShiftOff->setWorker( $workerSS );
             $shiftSent->setWorker( $userLogged );
             $shiftSent->setSwappable(0);
-             // quizas añadir para cancelar el volver a cambiarlo una vez tomado aqui: $shiftSent->setSwappable(0);
+            
              $em->persist($userShiftOff);
         }
         $shiftSent->setSwapping($reqArray['swapping']);
@@ -228,25 +224,7 @@ class ShiftController extends AbstractController
         $dateToAddedTime = $reqArray['dateTojsn']." 23:59:59.000000";
         $dateFromctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u',$dateFromAddedTime);
         $dateToctlr = \DateTime::createFromFormat('Y-m-d H:i:s.u', $dateToAddedTime);
-    
-        
-        // $shifts = $sRepo->getRotaBranch($em, $dateFromctlr, $dateToctlr, $userBranch);
-        // if(count($shifts) === 0){
-        //     $workers = $wRepo->getWorkersBranch($em,$userBranch);
-        //     $answer = [];
-        //     foreach($workers as $worker){
-            
-        //         $answer[] = [
-        //             'worker' => $worker->getWorkerName(),
-        //             'id' => $worker->getId()
-        //     ];
-        //     }
-
-        //     return new JsonResponse($answer, 240); //catch 240 para mandar una rota vacia
-        // }
-                     
-
-                        
+                   
         $workers = $wRepo->getWorkersBranch($em, $userBranch);
         $answer = [];                
         $shifts = [];
@@ -284,10 +262,7 @@ class ShiftController extends AbstractController
     /**
      * @Route("/manager/rotachange", name="shift_mg_rotachange", methods={"POST"})
      */
-    public function rotaChange( Request $request, EntityManagerInterface $em, WorkersRepository $wRepo, ShiftTypeRepository $sTRepo, ShiftRepository $sRepo): Response
-    {/*Funcion de MANAGER que update los TURNOS con los RANGOS DE FECHA del BRANCH del MANAGER LOGUEADO */
-        
-    }
+   
    private function serialize($arrayShifts)
    {/*funcion para serializar TURNOS*/
     $shiftarray = [];
@@ -308,7 +283,7 @@ class ShiftController extends AbstractController
             'id' => $shift->getId()
 
         ];
-        $shiftarray[] = $shiftObj;          //to push it in shiftArray
+        $shiftarray[] = $shiftObj;         
     }
     return $shiftarray;
    }
