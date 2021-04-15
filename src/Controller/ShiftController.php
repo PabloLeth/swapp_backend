@@ -207,7 +207,13 @@ class ShiftController extends AbstractController
         $header = "From: swapp@swapp.com";
 
         if ($reqArray['swapping'] == 0){ 
-            mail ( $to, $subject, $message, $header );
+            foreach ($userMgsMails as $to){
+             mail ( $to, $subject, $message, $header );
+            }
+            foreach ($shiftUserMgMails as $to){
+             mail ( $to, $subject, $message, $header );
+            }
+
             $userLogged = $this->getUser();
             $userId = $userLogged->getId();
 
