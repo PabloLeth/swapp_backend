@@ -49,6 +49,20 @@ class WorkersRepository extends ServiceEntityRepository implements PasswordUpgra
         $workers = $query->getResult();
         return $workers;
     }
+
+    public function getManagers($em,$branchId)
+    {
+        $sql = "SELECT w FROM App\Entity\Workers w Where w.branch = ?1 AND w.roles LIKE ?2";
+
+        $query = $em->createQuery($sql);
+        $query->setParameter(1, $branchId);
+        $query->setParameter(2,  '%"ROLE_MANAGER"%');
+       
+        
+        $managers = $query->getResult();
+        
+        return $managers;
+    }
     
 
 

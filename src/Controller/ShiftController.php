@@ -176,17 +176,44 @@ class ShiftController extends AbstractController
         $isSwappable = $shiftSent->getSwappable();
         $isSwapping = $shiftSent->getSwapping();
       
+        $shiftUserName = $shiftSent->getWorker()->getWorkerName();
+        $userName = $userLogged->getWorkerName();
+        
+        $shiftUserBranch = $shiftSent->getBranch()->getId();
+        $userBranch =  $userLogged->getBranch()->getId();
+
+        $shiftUserMgs = $wRepo->getManagers($em,$shiftUserBranch);
+        $userMgs =  $wRepo->getManagers($em,$userBranch);
+
+        $shiftUserMgMails = [];
+        $userMgsMails = [];
+
+        foreach ($shiftUserMgs as $shiftUserMg){
+            $shiftUserMgMail = $shiftUserMg->getEmail();
+            $shiftUserMgMails[] =  $shiftUserMgMail;
+        }
+        foreach ($userMgs as $userMg){
+            $userMgMail = $userMg->getEmail();
+            $userMgsMails[] =  $userMgMail;
+        }
+       
+
         if ($isSwappable == 0 || $reqArray['swapping'] == 0 && $isSwapping == 0 ){
             return new JsonResponse(['answer'=> 'there is no permission, contact with your manager'], 403);
         }
-   
+        $to = "test@test.com";
+        $subject = "swapping shift";
+        $message = "this email is to let you know that $userName is taking a shift from $shiftUserName.";
+        $header = "From: swapp@swapp.com";
+
         if ($reqArray['swapping'] == 0){ 
+            mail ( $to, $subject, $message, $header );
             $userLogged = $this->getUser();
             $userId = $userLogged->getId();
 
             $dateSS =  $shiftSent->getDate();
             $shiftTypeSS =  $shiftSent->getShiftType();
-            $workerSS = $shiftSent->getWorker();
+            $workerSS = $shiftSent->getWorker(); 
 
           
             $userShiftOff = $sRepo->findOneBy(array (
